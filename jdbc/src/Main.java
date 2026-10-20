@@ -4,47 +4,43 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
         String url="jdbc:mysql://localhost:3306/study?serverTimeZone=Asia/Shanghai";
-        String userName="root";
-        String password1="123456";
+        String dbUser="root";
+        String dbPassword="123456";
+        Class.forName("com.mysql.cj.jdbc.Driver");
         Scanner sc=new Scanner(System.in);
-        List<User> users=new ArrayList<>();
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection cnn= DriverManager.getConnection(url,userName,password1);
-            Statement st=cnn.createStatement();
-            String sql="SELECT * FROM user";
-            ResultSet rs=st.executeQuery(sql);
-            while(rs.next()){
-                String id=rs.getString("id");
-                String name=rs.getString("name");
-                String password=rs.getString("password");
-                int status=rs.getInt("status");
-                User temp=new User(id,name,password,status);
-                users.add(temp);
-            }
-            User user_=new User();
+        try (Connection cnn= DriverManager.getConnection(url,dbUser,dbPassword);){
+
             System.out.println("输入你的id");
-            user_.setId(sc.next());
+            String inputId=sc.nextLine();
             System.out.println("输入你的密码");
-            user_.setPassword(sc.next());
-            for(User user:users){
-                if(user_.equals(user)){
-                    System.out.println("登录成功");
-                    user_.setName(user.getName());
-                    user_.setStatus(user.getStatus());
-                    break;
+            String inputPassword=sc.nextLine();
+            String sql="SELECT * FROM user where id='"+inputId+"' AND password='"+inputPassword+"'";
+            try(Statement st=cnn.createStatement();ResultSet rs=st.executeQuery(sql);){
+                boolean flag=false;
+                User user=new User();
+                while(rs.next()){
+                    flag=true;
+                    user.setName(rs.getString("name"));
+                    user.setId(rs.getString("id"));
+                    user.setPassword(rs.getString("password"));
+                    user.setStatus(rs.getInt("status"));
                 }
+                if(flag){
+                    System.out.print("登录成功：");
+                    if(user.getStatus()==1){
+                        System.out.println("管理员"+user.getName()+"登录");
+                    }else{
+                        System.out.println("用户"+user.getName()+"登录");
+                    }
+                }else{
+                    System.out.println("账号或密码错误");
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-            if(user_.getStatus()==0){
-                System.out.println("登录失败，账号或用户名错误");
-            }else if(user_.getStatus()==1){
-                System.out.println("管理员"+user_.getName()+"登录");
-            }else{
-                System.out.println("用户"+user_.getName()+"登录");
-            }
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }

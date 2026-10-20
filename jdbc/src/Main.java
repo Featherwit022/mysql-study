@@ -16,26 +16,30 @@ public class Main {
             String inputId=sc.nextLine();
             System.out.println("输入你的密码");
             String inputPassword=sc.nextLine();
-            String sql="SELECT * FROM user where id='"+inputId+"' AND password='"+inputPassword+"'";
-            try(Statement st=cnn.createStatement();ResultSet rs=st.executeQuery(sql);){
-                boolean flag=false;
-                User user=new User();
-                while(rs.next()){
-                    flag=true;
-                    user.setName(rs.getString("name"));
-                    user.setId(rs.getString("id"));
-                    user.setPassword(rs.getString("password"));
-                    user.setStatus(rs.getInt("status"));
-                }
-                if(flag){
-                    System.out.print("登录成功：");
-                    if(user.getStatus()==1){
-                        System.out.println("管理员"+user.getName()+"登录");
-                    }else{
-                        System.out.println("用户"+user.getName()+"登录");
+            String sql="SELECT * FROM user where id= ?AND password= ?";
+            try(PreparedStatement st=cnn.prepareStatement(sql);){
+                st.setString(1,inputId);
+                st.setString(2,inputPassword);
+                try(ResultSet rs=st.executeQuery();){
+                    boolean flag=false;
+                    User user=new User();
+                    while(rs.next()){
+                        flag=true;
+                        user.setName(rs.getString("name"));
+                        user.setId(rs.getString("id"));
+                        user.setPassword(rs.getString("password"));
+                        user.setStatus(rs.getInt("status"));
                     }
-                }else{
-                    System.out.println("账号或密码错误");
+                    if(flag){
+                        System.out.print("登录成功：");
+                        if(user.getStatus()==1){
+                            System.out.println("管理员"+user.getName()+"登录");
+                        }else{
+                            System.out.println("用户"+user.getName()+"登录");
+                        }
+                    }else{
+                        System.out.println("账号或密码错误");
+                    }
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);

@@ -66,6 +66,4 @@ CREATE TABLE score (
 
 ## 已知问题
 
-- `JdbcUtil` 通用映射使用 `getField` 读取实体字段，对 `private` 字段无效，会导致查询结果映射为空，登录校验恒失败。
-- `JdbcUtil.update` 未关闭连接与语句，存在资源泄漏。
 - 密码为明文存储，仅作练习，生产环境需哈希处理。
